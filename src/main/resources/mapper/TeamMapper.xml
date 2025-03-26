@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itpk.usercenter.mapper.TeamMapper">
+
+    <resultMap id="BaseResultMap" type="com.itpk.usercenter.model.Team">
+            <id property="id" column="id" />
+            <result property="name" column="name" />
+            <result property="description" column="description" />
+            <result property="maxNum" column="maxNum" />
+            <result property="expireTime" column="expireTime" />
+            <result property="userid" column="userId" />
+            <result property="status" column="status" />
+            <result property="password" column="password" />
+            <result property="createTime" column="createTime" />
+            <result property="updateTime" column="updateTime" />
+            <result property="isDelete" column="isDelete" />
+    </resultMap>
+    <select id="selectTeamForUpdate" resultType="com.itpk.usercenter.model.Team">
+        SELECT * FROM team
+        WHERE id = #{teamId}
+          AND isDelete = 0
+            FOR UPDATE
+    </select>
+    <sql id="Base_Column_List">
+        id,name,description,maxNum,expireTime,userId,
+        status,password,createTime,updateTime,isDelete
+    </sql>
+</mapper>
