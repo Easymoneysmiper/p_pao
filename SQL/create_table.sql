@@ -1,4 +1,4 @@
-create table if not exists pk.user
+create table if not exists user
 (
     id           bigint auto_increment comment 'id'
         primary key,

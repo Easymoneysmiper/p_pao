@@ -33,7 +33,7 @@ import static com.itpk.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 @RestController
 @RequestMapping("api/user")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = {"https://ppao.easy-money-code.com","http://localhost:5173"}, allowCredentials = "true")
 @Slf4j
 public class UserController {
     @Resource private UserService userService;
@@ -247,6 +247,45 @@ public class UserController {
         log.error("redis set key error", e);
     }
         return ResultUtils.success(list);
+    }
+    @GetMapping("/match")
+    public BasicResponse<Page<User>> userMatch(Long PageNum, Long PageSize, HttpServletRequest request) {
+        if (PageNum == null || PageSize == null) {
+            throw new BusinessException(errorCode.PARAMS_ERROR);
+        }
+        if (PageNum>20||PageNum<0)
+        {
+            throw new BusinessException(errorCode.PARAMS_ERROR);
+        }
+        if(request==null)
+        {
+            throw new BusinessException(errorCode.PARAMS_ERROR);
+        }
+        User currentUser = userService.getCurrentUser(request);
+        if (currentUser==null)
+            throw new BusinessException(errorCode.NO_AUTH);
+
+        String redisKey = String.format("p_pao:user:match:%s", currentUser.getId());
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
+        Page<User> list = (Page<User>) valueOperations.get(redisKey);
+        if (list != null) {
+            return ResultUtils.success(list);
+        }
+        List<User> userList=userService.match(request);
+        Page<User> userPage=new Page<>(PageNum,PageSize);
+        userPage.setRecords(userList);
+        if (userPage==null)
+        {
+            throw new BusinessException(errorCode.SYSTEM_ERROR);
+        }
+        try {
+            valueOperations.set(redisKey, userPage,100000, TimeUnit.MILLISECONDS);
+        }
+        catch (Exception e) {
+            log.error("redis set key error", e);
+        }
+        return ResultUtils.success(userPage);
+
     }
 
 }

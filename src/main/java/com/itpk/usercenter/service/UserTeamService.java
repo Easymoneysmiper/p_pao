@@ -30,4 +30,12 @@ public interface UserTeamService extends IService<UserTeam> {
      * @return
      */
     boolean isUserInTeam(Long userId, Long teamId);
+
+    /**
+     * 删除用户队伍关系
+     * @param userId
+     * @param teamId
+     * @return
+     */
+    boolean removeUserTeam(Long userId, Long teamId);
 }

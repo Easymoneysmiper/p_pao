@@ -1,14 +1,15 @@
 package com.itpk.usercenter.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itpk.usercenter.model.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.itpk.usercenter.model.User;
 import com.itpk.usercenter.model.VO.TeamUserVO;
 import com.itpk.usercenter.model.dto.SearchTeamQuery;
+import com.itpk.usercenter.model.request.DeleteRequest;
 import com.itpk.usercenter.model.request.JoinTeamRequest;
+import com.itpk.usercenter.model.request.QuitTeamReQuest;
 import com.itpk.usercenter.model.request.UpdateTeamRequest;
-import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -49,4 +50,29 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     boolean join(JoinTeamRequest joinTeamRequest, HttpServletRequest request);
+
+    /**
+     * 退出队伍
+     *
+     * @param quitTeamReQuest
+     * @param request
+     * @return
+     */
+    boolean quitTeam(QuitTeamReQuest quitTeamReQuest, HttpServletRequest request);
+
+   /**
+    * 解散队伍
+    * @param deleteRequest
+    * @param request
+    * @return
+    */
+    boolean deleteTeam(DeleteRequest deleteRequest, HttpServletRequest request);
+
+    /**
+     * 分页展示队伍
+     * @param searchTeamQuery
+     * @param request
+     * @return
+     */
+    Page<TeamUserVO> pageListTeams(SearchTeamQuery searchTeamQuery, HttpServletRequest request);
 }

@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.itpk.usercenter.model.request.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.Date;
 @EqualsAndHashCode(callSuper = true)
@@ -41,6 +43,7 @@ public class SearchTeamQuery extends PageRequest {
     /**
      * 0 - 公开，1 - 私有，2 -加密
      */
+    @Nullable
     private Integer status;
 
     /**

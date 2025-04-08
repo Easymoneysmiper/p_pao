@@ -12,11 +12,14 @@ import com.itpk.usercenter.common.errorCode;
 import com.itpk.usercenter.mapper.UserMapper;
 import com.itpk.usercenter.model.User;
 import com.itpk.usercenter.service.UserService;
+import com.itpk.usercenter.utils.AlgorithmUtils;
 import com.itpk.usercenter.utils.FileUploadUtil;
+
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.commons.math3.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -26,10 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -272,6 +272,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Object session = request.getSession().getAttribute(USER_LOGIN_STATE);
         User safeUser = (User)session;
         return (safeUser.getUserRole().equals(ADMIN_ROLE));
+    }
+
+    @Override
+    public List<User> match(HttpServletRequest request) {
+        int num=10;
+        User loginUser = (User)request.getSession().getAttribute(USER_LOGIN_STATE);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+//        List<Integer> idlist=Arrays.asList(11,12,13,14,15,16,17,18,19,20,21,22,23,24,25);
+//        queryWrapper.in("id",idlist);
+        queryWrapper.select("id","tags");
+        List<User> userList=userMapper.selectList(queryWrapper);
+        String tagsStr=loginUser.getTags();
+        Gson gson=new Gson();
+        List<String> tags = gson.fromJson(tagsStr, new TypeToken<List<String>>() {
+        }.getType());
+        List<Pair<User,Long>>indexDistance=new ArrayList<>();
+        for (int i=0;i<15;i++){
+            User user=userList.get(i);
+           String userTags=userList.get(i).getTags();
+           if (StringUtils.isBlank(userTags)|| user.getId().equals(loginUser.getId())){
+               continue;
+           }
+          List<String> userTagsList = gson.fromJson(userTags, new TypeToken<List<String>>() {
+            }.getType());
+            long distance=AlgorithmUtils.minDistance(tags,userTagsList);
+            indexDistance.add(new Pair<>(user,distance));
+        }
+        List<Pair<User,Long>> topUserList =indexDistance.stream().sorted((a,b)->(int)(a.getValue()-b.getValue())) .limit(num).collect(Collectors.toList());
+        List<Long> collectIds = topUserList.stream().map(pair -> pair.getKey().getId()
+        ).collect(Collectors.toList());
+        return collectIds.stream().map(id -> getSafetyUser(getById(id))).collect(Collectors.toList());
     }
 
     @Deprecated

@@ -1,7 +1,7 @@
 package com.itpk.usercenter.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.itpk.usercenter.Exception.BusinessException;
 import com.itpk.usercenter.common.BasicResponse;
@@ -11,9 +11,7 @@ import com.itpk.usercenter.model.Team;
 import com.itpk.usercenter.model.User;
 import com.itpk.usercenter.model.VO.TeamUserVO;
 import com.itpk.usercenter.model.dto.SearchTeamQuery;
-import com.itpk.usercenter.model.request.JoinTeamRequest;
-import com.itpk.usercenter.model.request.TeamAddRequest;
-import com.itpk.usercenter.model.request.UpdateTeamRequest;
+import com.itpk.usercenter.model.request.*;
 import com.itpk.usercenter.service.TeamService;
 import com.itpk.usercenter.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +26,7 @@ import static com.itpk.usercenter.constant.UserConstant.USER_LOGIN_STATE;
 
 @RestController
 @RequestMapping("api/team")
-@CrossOrigin(origins = {"http://localhost:3000","http://localhost:5173"}, allowCredentials = "true")
+@CrossOrigin(origins = {"https://ppao.easy-money-code.com","http://localhost:5173"}, allowCredentials = "true")
 @Slf4j
 public class TeamController  {
     @Resource
@@ -53,17 +51,12 @@ public class TeamController  {
        return ResultUtils.success(teamId);
    }
     @PostMapping("/delete")
-    public BasicResponse deleteTeam(@RequestBody Long teamId) {
-        if(teamId<0)
-        {
-            throw new BusinessException(errorCode.PARAMS_ERROR);
-        }
-        boolean remove = teamService.removeById(teamId);
-        if (!remove)
-        {
-            throw new BusinessException(errorCode.SYSTEM_ERROR,"队伍删除异常");
-        }
-        return ResultUtils.success(remove);
+    public BasicResponse deleteTeam(@RequestBody DeleteRequest deleteRequest , HttpServletRequest request) {
+       if(deleteRequest==null||request==null)
+           throw new BusinessException(errorCode.NULL_ERROR);
+
+       boolean result = teamService.deleteTeam(deleteRequest,request);
+        return ResultUtils.success(result);
     }
     @PostMapping("/update")
     public BasicResponse<Boolean> updateTeam(@RequestBody UpdateTeamRequest updateTeamRequest , HttpServletRequest request) {
@@ -109,7 +102,7 @@ public class TeamController  {
 //    }
 @PostMapping("/list")
 public BasicResponse<List<TeamUserVO>> listTeams(@RequestBody SearchTeamQuery  searchTeamQuery,HttpServletRequest httpServletRequest) {
-    if(searchTeamQuery==null)
+    if(searchTeamQuery==null||httpServletRequest==null)
     {
         throw new BusinessException(errorCode.NULL_ERROR);
     }
@@ -121,17 +114,13 @@ public BasicResponse<List<TeamUserVO>> listTeams(@RequestBody SearchTeamQuery  s
     return ResultUtils.success(teams);
 }
 
-   @GetMapping("/list/page")
-    public BasicResponse<Page<Team>> searchTeamInPage(@RequestBody SearchTeamQuery  searchTeamQuery) {
-        if(searchTeamQuery==null)
+   @PostMapping("/list/page")
+    public BasicResponse<Page<TeamUserVO>> searchTeamInPage(@RequestBody SearchTeamQuery  searchTeamQuery,HttpServletRequest request) {
+        if(searchTeamQuery==null||request==null)
         {
             throw new BusinessException(errorCode.NULL_ERROR);
         }
-        Team team = new Team();
-        BeanUtils.copyProperties(searchTeamQuery,team);
-        QueryWrapper<Team> queryWrapper = new QueryWrapper<>(team);
-        Page<Team> page=new Page<>(searchTeamQuery.getPageNum(),searchTeamQuery.getPageSize());
-        Page<Team> teams = teamService.page(page, queryWrapper);
+        Page<TeamUserVO> teams = teamService.pageListTeams(searchTeamQuery,request );
         if (teams==null)
         {
             throw new BusinessException(errorCode.SYSTEM_ERROR,"队伍列表查询异常");
@@ -149,6 +138,19 @@ public BasicResponse<List<TeamUserVO>> listTeams(@RequestBody SearchTeamQuery  s
            throw new BusinessException(errorCode.SYSTEM_ERROR,"加入队伍失败");
        return ResultUtils.success(result);
     }
+    @PostMapping("quit")
+    public BasicResponse<Boolean> quitTeam(@RequestBody QuitTeamReQuest quitTeamReQuest, HttpServletRequest request) {
+        if (quitTeamReQuest==null)
+            throw new BusinessException(errorCode.NULL_ERROR);
+        if(request==null)
+            throw new BusinessException(errorCode.NULL_ERROR);
+        boolean result = teamService.quitTeam(quitTeamReQuest, request);
+       if (!result)
+       {
+           throw new BusinessException(errorCode.SYSTEM_ERROR,"退出队伍失败");
+       }
+       return ResultUtils.success(result);
+   }
 }
 
 
