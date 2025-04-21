@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.itpk.usercenter.model.request.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Date;
